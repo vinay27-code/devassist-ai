@@ -21,62 +21,84 @@ function SnippetCard({ snippet }: { snippet: CodeSnippet }) {
   const gradient = LANG_GRADIENTS[snippet.language?.toLowerCase()] || LANG_GRADIENTS.default;
 
   return (
-    <div className="glass fade-in" style={{ overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
-      {/* Header */}
+    <div className="fade-in" style={{
+      background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16,
+      overflow: 'hidden', transition: 'all 0.2s',
+    }}>
+      {/* Card header */}
       <div onClick={() => setExpanded(!expanded)}
-        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', cursor: 'pointer', background: 'rgba(0,0,0,0.15)', transition: 'background 0.2s' }}
+        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', cursor: 'pointer', transition: 'background 0.2s' }}
         onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.03)'}
-        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(0,0,0,0.15)'}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, background: gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
-          <Code2 size={16} color="white" />
+        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'transparent'}>
+
+        {/* Language icon */}
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+          <Code2 size={17} color="white" />
         </div>
+
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snippet.title}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snippet.title}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <span className="glass-tag">{snippet.language}</span>
             <span className="mono" style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Clock size={10} /> {new Date(snippet.created_at).toLocaleDateString()}
             </span>
             {snippet.ai_review && (
-              <span style={{ fontSize: 11, color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Star size={10} /> AI Reviewed
+              <span style={{ fontSize: 11, color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
+                <Star size={10} fill="currentColor" /> AI Reviewed
+              </span>
+            )}
+            {snippet.ai_documentation && (
+              <span style={{ fontSize: 11, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
+                <FileText size={10} /> Documented
               </span>
             )}
           </div>
         </div>
-        <div style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
+
+        <div style={{ color: 'var(--text-muted)', flexShrink: 0, transition: 'transform 0.2s', transform: expanded ? 'rotate(0deg)' : 'rotate(0deg)' }}>
           {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </div>
       </div>
 
-      {/* Expanded */}
+      {/* Expanded content */}
       {expanded && (
         <div className="fade-in">
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 20px' }}>
+          {/* Tab bar */}
+          <div style={{ display: 'flex', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.15)', padding: '0 20px', gap: 4 }}>
             {(['code', 'review', 'docs'] as const).map(tab => (
               (tab === 'code' || (tab === 'review' && snippet.ai_review) || (tab === 'docs' && snippet.ai_documentation)) && (
-                <button key={tab} onClick={() => setActiveTab(tab)}
-                  style={{
-                    padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
-                    borderBottom: `2px solid ${activeTab === tab ? 'var(--accent)' : 'transparent'}`,
-                    color: activeTab === tab ? 'var(--accent)' : 'var(--text-muted)',
-                    transition: 'all 0.2s',
-                  }}>
+                <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                  padding: '11px 16px', background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                  borderBottom: `2px solid ${activeTab === tab ? 'var(--accent)' : 'transparent'}`,
+                  color: activeTab === tab ? 'var(--accent)' : 'var(--text-muted)',
+                  transition: 'all 0.2s', marginBottom: -1,
+                }}>
                   {tab === 'code' ? '{ } Code' : tab === 'review' ? '⚡ AI Review' : '📄 Docs'}
                 </button>
               )
             ))}
           </div>
-          <div style={{ padding: 20, maxHeight: 400, overflow: 'auto' }}>
+
+          {/* Tab content */}
+          <div style={{ padding: 20, maxHeight: 420, overflow: 'auto' }}>
             {activeTab === 'code' && (
-              <pre style={{ fontFamily: "'SF Mono', monospace", fontSize: 13, lineHeight: 1.7, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: 16, overflow: 'auto', color: 'var(--text-primary)' }}>
+              <pre style={{
+                fontFamily: "'SF Mono', 'Fira Code', monospace", fontSize: 13, lineHeight: 1.7,
+                background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 12, padding: 18, overflow: 'auto', color: 'var(--text-primary)', margin: 0,
+              }}>
                 <code>{snippet.code}</code>
               </pre>
             )}
-            {activeTab === 'review' && snippet.ai_review && <div className="prose-glass"><ReactMarkdown>{snippet.ai_review}</ReactMarkdown></div>}
-            {activeTab === 'docs' && snippet.ai_documentation && <div className="prose-glass"><ReactMarkdown>{snippet.ai_documentation}</ReactMarkdown></div>}
+            {activeTab === 'review' && snippet.ai_review && (
+              <div className="prose-glass"><ReactMarkdown>{snippet.ai_review}</ReactMarkdown></div>
+            )}
+            {activeTab === 'docs' && snippet.ai_documentation && (
+              <div className="prose-glass"><ReactMarkdown>{snippet.ai_documentation}</ReactMarkdown></div>
+            )}
           </div>
         </div>
       )}
@@ -107,15 +129,8 @@ export default function SnippetsPage() {
     return matchSearch && matchLang;
   });
 
-  const selectStyle = {
-    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 10, color: 'var(--text-secondary)', fontSize: 13,
-    padding: '10px 14px', outline: 'none', fontFamily: 'inherit', cursor: 'pointer',
-    backdropFilter: 'blur(12px)',
-  };
-
   return (
-    <div style={{ padding: '40px 48px', maxWidth: 1000 }}>
+    <div style={{ padding: '40px 48px', maxWidth: 1000, height: '100%', overflowY: 'auto' }}>
       {/* Header */}
       <div className="fade-in" style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 6 }} className="text-gradient">Snippets Library</h1>
@@ -124,23 +139,42 @@ export default function SnippetsPage() {
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="fade-in stagger-1" style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-        <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)} style={{ ...selectStyle, minWidth: 200 }}>
+      {/* Filter bar */}
+      <div className="fade-in stagger-1" style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap', alignItems: 'center' }}>
+        <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)} style={{
+          background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
+          color: 'var(--text-secondary)', fontSize: 13, padding: '11px 16px',
+          outline: 'none', fontFamily: 'inherit', cursor: 'pointer', minWidth: 220,
+          boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)',
+        }}>
           <option value="">Select a project…</option>
           {(projects as Project[]).map((p: Project) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
 
         {selectedProject && (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', backdropFilter: 'blur(12px)' }}>
+            {/* Search */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10, flex: 1,
+              background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
+              padding: '11px 16px', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)',
+            }}>
               <Search size={15} color="var(--text-muted)" />
               <input value={search} onChange={e => setSearch(e.target.value)}
                 style={{ background: 'none', border: 'none', outline: 'none', flex: 1, fontSize: 13, color: 'var(--text-primary)', fontFamily: 'inherit' }}
                 placeholder="Search snippets…" />
             </div>
+
+            {/* Language filter */}
             {languages.length > 0 && (
-              <select value={langFilter} onChange={e => setLangFilter(e.target.value)} style={{ ...selectStyle, minWidth: 150 }}>
+              <select value={langFilter} onChange={e => setLangFilter(e.target.value)} style={{
+                background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
+                color: 'var(--text-secondary)', fontSize: 13, padding: '11px 16px',
+                outline: 'none', fontFamily: 'inherit', cursor: 'pointer', minWidth: 160,
+              }}>
                 <option value="">All languages</option>
                 {languages.map(l => <option key={l} value={l}>{l}</option>)}
               </select>
@@ -149,35 +183,41 @@ export default function SnippetsPage() {
         )}
       </div>
 
-      {/* Empty: no project selected */}
+      {/* Empty: no project */}
       {!selectedProject && (
-        <div className="glass fade-in stagger-2" style={{ padding: 60, textAlign: 'center' }}>
-          <div style={{ width: 72, height: 72, borderRadius: 24, background: 'rgba(129,140,248,0.08)', border: '1px solid rgba(129,140,248,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <FileText size={30} color="var(--accent)" />
+        <div className="fade-in stagger-2" style={{
+          padding: '60px 40px', textAlign: 'center',
+          background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.07)', borderRadius: 24,
+        }}>
+          <div style={{ width: 80, height: 80, borderRadius: 24, background: 'rgba(129,140,248,0.08)', border: '1px solid rgba(129,140,248,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <FileText size={34} color="var(--accent)" />
           </div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }} className="text-gradient">Select a project</h3>
-          <p className="mono" style={{ color: 'var(--text-muted)', fontSize: 13 }}>Snippets are saved when you run AI code review</p>
+          <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }} className="text-gradient">Select a project</h3>
+          <p className="mono" style={{ color: 'var(--text-muted)', fontSize: 13 }}>Snippets are saved automatically when you run AI code review</p>
         </div>
       )}
 
-      {/* Loading */}
+      {/* Loading shimmer */}
       {selectedProject && isLoading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[...Array(3)].map((_, i) => <div key={i} className="glass shimmer" style={{ height: 72 }} />)}
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="shimmer" style={{ height: 74, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }} />
+          ))}
         </div>
       )}
 
-      {/* No snippets */}
+      {/* Empty results */}
       {selectedProject && !isLoading && filtered.length === 0 && (
-        <div className="glass fade-in" style={{ padding: 48, textAlign: 'center' }}>
-          <Code2 size={32} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+        <div style={{ padding: '48px 40px', textAlign: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20 }}>
+          <Code2 size={32} color="var(--text-muted)" style={{ margin: '0 auto 12px', display: 'block' }} />
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            {search || langFilter ? 'No snippets match your filters' : 'No snippets yet — run an AI code review to create one'}
+            {search || langFilter ? 'No snippets match your filters' : 'No snippets yet — run an AI code review to save your first snippet'}
           </p>
         </div>
       )}
 
-      {/* Snippets list */}
+      {/* Snippet cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {filtered.map((snippet: CodeSnippet) => <SnippetCard key={snippet.id} snippet={snippet} />)}
       </div>
